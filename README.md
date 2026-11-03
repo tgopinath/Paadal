@@ -93,7 +93,7 @@ needs an API key:
 ### Adding the keys
 
 - **Live website**: in GitHub, go to **Settings → Secrets and variables → Actions → Variables**
-  and add `SPOTIFY_CLIENT_ID` and `YOUTUBE_API_KEY`. Then re-run **Deploy web app** from the **Actions** tab (or push to `main`).
+  and add `YOUTUBE_API_KEY` (and `SPOTIFY_CLIENT_ID` only to override the built-in ID in `src/config.ts`). Then re-run **Deploy web app** from the **Actions** tab (or push to `main`).
 - **Local / app builds**: create a `.env.local` file (it's git-ignored):
 
   ```bash

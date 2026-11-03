@@ -3,7 +3,8 @@
  * (see README → "Film songs: Spotify and YouTube"). Both are visible in the
  * app's code once built, so restrict them in the providers' dashboards.
  */
-export const SPOTIFY_CLIENT_ID = process.env.EXPO_PUBLIC_SPOTIFY_CLIENT_ID ?? '';
+// Spotify Client IDs are public (PKCE sign-in, no client secret), so the app's ID is the default.
+export const SPOTIFY_CLIENT_ID = process.env.EXPO_PUBLIC_SPOTIFY_CLIENT_ID || '37b5b195bcd34d47bdceeb04d80516f5';
 export const YOUTUBE_API_KEY = process.env.EXPO_PUBLIC_YOUTUBE_API_KEY ?? '';
 
 /** Searches offered as one-tap chips on the Film Songs tab. */
