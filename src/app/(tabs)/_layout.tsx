@@ -31,6 +31,7 @@ export default function TabsLayout() {
     >
       <Tabs.Screen name="index" options={{ title: 'Home', tabBarIcon: icon('home', 'home-outline') }} />
       <Tabs.Screen name="search" options={{ title: 'Search', tabBarIcon: icon('search', 'search-outline') }} />
+      <Tabs.Screen name="film" options={{ title: 'Film Songs', tabBarIcon: icon('film', 'film-outline') }} />
       <Tabs.Screen name="library" options={{ title: 'Your Library', tabBarIcon: icon('library', 'library-outline') }} />
     </Tabs>
   );

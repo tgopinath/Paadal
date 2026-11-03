@@ -69,6 +69,11 @@ export function getPlayer(): AudioPlayer {
   return player;
 }
 
+/** Pause Paadal's own audio, e.g. when Spotify or YouTube starts playing. */
+export function pauseLocalPlayback() {
+  if (player?.playing) player.pause();
+}
+
 /** Live position/duration of the shared player, for progress UI. */
 export function usePlaybackStatus() {
   return useAudioPlayerStatus(getPlayer());

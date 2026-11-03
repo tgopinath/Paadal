@@ -12,7 +12,7 @@ const theme = {
 };
 
 /** Routes that cover the whole screen and therefore hide the mini player. */
-const FULL_SCREEN_ROUTES = new Set(['player', 'queue', 'track', 'create-playlist', 'add-to-playlist']);
+const FULL_SCREEN_ROUTES = new Set(['player', 'queue', 'track', 'create-playlist', 'add-to-playlist', 'youtube-player', 'spotify-auth']);
 
 function FloatingMiniPlayer() {
   const segments = useSegments() as string[];
@@ -45,6 +45,7 @@ export default function RootLayout() {
               name="add-to-playlist"
               options={{ presentation: 'transparentModal', animation: 'fade', contentStyle: { backgroundColor: 'transparent' } }}
             />
+            <Stack.Screen name="youtube-player" options={{ presentation: 'fullScreenModal', animation: 'slide_from_bottom' }} />
             <Stack.Screen name="create-playlist" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
           </Stack>
           <FloatingMiniPlayer />
