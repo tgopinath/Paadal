@@ -28,6 +28,8 @@ npm start          # then press i (iOS simulator), a (Android emulator) or w (we
 - Phone: install **Expo Go** and scan the QR code. Background audio needs a
   development build: `npx expo run:ios` / `npx expo run:android`, or `npx eas-cli build --profile development`.
 - Web: `npm run web` for development, `npm run build:web` for a static site in `dist/`.
+- Live web app: https://tgopinath.github.io/Paadal/, rebuilt automatically on every push to `main`
+  (`.github/workflows/deploy-web.yml`).
 
 Checks:
 
