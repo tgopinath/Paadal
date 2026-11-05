@@ -51,7 +51,7 @@ and the delivery phases.
 │        │                                                                   │
 │  Repository layer  src/lib/data/repository.ts                              │
 │        ├── DemoRepository      (synthetic, in-memory, deterministic)       │
-│        └── PostgresRepository  (Phase 2: Prisma, read replicas later)      │
+│        └── PostgresRepository  (daily_product_rollups → Dataset)           │
 │        │                                                                   │
 │  Analytics engine  src/lib/analytics/*  (pure functions, provider-agnostic)│
 └────────┬───────────────────────────────────────────────────────────────────┘
@@ -85,11 +85,12 @@ the same code serves demo data, Postgres data and test fixtures.
 | `/categories` | Categories | Category share, demand and price trend | 3 ✅ |
 | `/compare` | Product Comparison | Up to 5 products, table + charts | 4 ✅ |
 | `/opportunities` | Opportunity Finder | Opportunity score, classification, profit calculator (GST-aware) | 4 ✅ |
-| `/watchlist` | My Watchlist | Saved products, collections, alerts | 5 (watchlist ✅ local; alerts planned) |
-| `/reports` | Reports | Daily / weekly / monthly / yearly / category / trending / opportunity reports; CSV ✅, Excel and PDF planned | 5 (partial) |
-| `/ai` | Amazon Pulse AI | Questions answered from database records, with metrics, period, freshness and limits | 4 (planned) |
-| `/data-sources` | Data Sources | Provider status, credential configuration (env and secrets manager), CSV import | 6 (status ✅) |
-| `/settings` | Settings | Profile, fee assumptions, GST defaults, display | 1 (partial) |
+| `/watchlist` | My Watchlist | Saved products, collections, alerts | 5 ✅ |
+| `/reports` | Reports | Daily / weekly / monthly / yearly / category / trending / opportunity reports; CSV, Excel, print-to-PDF | 5 ✅ |
+| `/ai` | Amazon Pulse AI | Questions answered from database records, with metrics, period, freshness and limits | 4 ✅ |
+| `/data-sources` | Data Sources | Provider status, CSV import, collection run log | 6 ✅ |
+| `/settings` | Settings | Fee and GST assumptions | 1 (partial) |
+| `/login`, `/signup` | Accounts | Email/password; required in production mode | 6 ✅ |
 
 **Navigation.** On desktop (≥1024px), a sidebar with all 12 sections. On
 mobile, a bottom bar with Home / Discover / Trends / Watchlist / Profile, and
@@ -132,8 +133,8 @@ the remaining sections are reached from Profile.
 
 ## 5. Data model (PostgreSQL)
 
-The full Prisma schema is in [`prisma/schema.prisma`](../prisma/schema.prisma).
-Key decisions:
+The schema is plain SQL in [`db/migrations/`](../db/migrations), applied by
+`npm run db:migrate`. Key decisions:
 
 * `product_snapshots` is **append-only** and range-partitioned by month on
   `captured_at`. Its index is `(product_id, captured_at DESC)` for product
@@ -142,7 +143,11 @@ Key decisions:
   observed and estimated values stay separate.
 * `daily_product_rollups` is a materialised view (one row per product per day)
   that feeds weekly, monthly and yearly aggregates without scanning raw
-  snapshots.
+  snapshots. It excludes `data_source = 'demo'`, so synthetic rows can never
+  reach production analytics.
+* The analytics engine runs in memory over the rollups, reloaded only after a
+  new ingestion run or a new day. That suits a few thousand products; beyond
+  that, move ranking and series aggregation into SQL over the same view.
 * `ingestion_runs` records every collection job, so data freshness and gaps
   can be reported.
 * User-owned tables (`watchlists`, `alerts`, `user_reports`, `cost_profiles`)
@@ -219,9 +224,6 @@ factor's contribution is shown.
 | 1 Foundation | Project setup, design system, responsive shell, navigation, Overview dashboard, PWA manifest | ✅ This release |
 | 2 Product intelligence | Explorer, filters, search, product detail; Postgres schema | ✅ UI + schema (demo repository) |
 | 3 Analytics | Period engine, historical snapshots, comparisons, coverage | ✅ Engine + UI on demo data |
-| 4 Intelligence | Trending, opportunity finder, comparison | ✅ ; AI assistant planned |
-| 5 Business | Watchlist ✅ (device-local), collections, alerts, Excel and PDF exports | Partial |
-| 6 Integration | Auth, Postgres repository, ingestion worker, PA-API/SP-API adapters, CSV import, deployment | Planned |
-
-Authentication is planned for Phase 6, together with Postgres. It needs a real
-user table, so it is not stubbed with a fake login screen.
+| 4 Intelligence | Trending, opportunity finder, comparison, AI assistant | ✅ (AI needs an API key) |
+| 5 Business | Watchlist, collections, alerts (account-backed), CSV/Excel/PDF exports | ✅ ; alert email/push not started |
+| 6 Integration | Accounts, Postgres repository, CSV import, scheduled job, deployment config | ✅ ; PA-API/SP-API/licensed adapters wait for credentials |

@@ -76,9 +76,13 @@ async function Reports({ searchParams }: { searchParams: Promise<Params> }) {
                 </Button>
               )}
               {report.available && <PrintButton />}
-              <Button variant="outline" disabled title="Native .xlsx export is planned for Phase 5; the CSV opens in Excel today.">
-                <FileSpreadsheet /> Excel (soon)
-              </Button>
+              {report.available && (
+                <Button asChild variant="outline">
+                  <a href={`${csvHref}&format=xlsx`} download>
+                    <FileSpreadsheet /> Excel
+                  </a>
+                </Button>
+              )}
             </div>
           </CardHeader>
           <CardContent className="space-y-3">

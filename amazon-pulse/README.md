@@ -13,9 +13,9 @@ profit estimates.
 > turns demo data off.
 
 - Architecture, screen map, data model and scoring methods: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
-- Database schema: [`prisma/schema.prisma`](prisma/schema.prisma) and [`db/partitioning.sql`](db/partitioning.sql)
+- Database schema: [`db/migrations/`](db/migrations) (plain SQL, `npm run db:migrate`)
 
-## What works today (Phases 1–4, demo data)
+## What works today
 
 | Area | Status |
 |---|---|
@@ -27,11 +27,16 @@ profit estimates.
 | Trending Now: 7 lenses, internal trend score with signal breakdown | ✅ |
 | Opportunity Finder: 7-factor score with High/Medium/Low class and explanation; GST/ITC-aware profit calculator | ✅ |
 | Comparison of up to 5 products (table and chart) | ✅ |
-| Watchlist, collections and threshold alerts | ✅ saved on the device |
-| Reports: 7 report types, CSV export, print / save as PDF | ✅ (native Excel planned) |
-| Data Sources: provider status from env vars, CSV format spec | ✅ (ingestion planned) |
+| Watchlist, collections and threshold alerts | ✅ on the device in demo mode; saved to the account in production |
+| Reports: 7 report types, CSV and Excel export, print / save as PDF | ✅ |
+| Data Sources: provider status, CSV history import with preview, collection run log | ✅ |
 | Installable PWA: manifest, icons, service worker, offline page | ✅ |
-| Email/password auth, Postgres repository, ingestion worker, AI assistant | Planned (Phases 4–6) |
+| Production mode on PostgreSQL (partitioned snapshots, daily rollups) | ✅ |
+| Email/password accounts (scrypt, database sessions, sign-in throttling) | ✅ |
+| Scheduled job: partitions, rollups, alert evaluation, cleanup | ✅ |
+| Amazon Pulse AI (Claude, answers only from analytics tools) | ✅ needs `ANTHROPIC_API_KEY` |
+| PA-API / SP-API / licensed-provider collection adapters | Waiting for credentials (see below) |
+| Alert delivery by email or push | Not started (needs an email provider) |
 
 ## Run locally
 
@@ -47,8 +52,18 @@ Checks:
 ```bash
 npm run lint
 npm run typecheck
-npm test        # analytics unit tests (periods, GST profit, coverage, CSV)
+npm test        # analytics, CSV import and AI tool tests
 npm run build
+TEST_DATABASE_URL=postgres://… npm run test:db   # against a disposable, migrated database
+```
+
+Run production mode locally:
+
+```bash
+createdb amazon_pulse
+DATABASE_URL=postgres://localhost/amazon_pulse npm run db:migrate
+APP_MODE=production DATABASE_URL=postgres://localhost/amazon_pulse npm run dev
+# Sign up at /signup, then import history on /data-sources.
 ```
 
 ## Deploy (Vercel)
@@ -56,27 +71,25 @@ npm run build
 1. Import the repository in Vercel and set **Root Directory** to `amazon-pulse`.
 2. Framework preset: Next.js. The build and install commands use the defaults.
 3. Add the environment variables below. For the demo, `APP_MODE=demo` is enough.
-4. Deploy. The app can be installed from the browser on Android (Chrome →
+4. For production: create a PostgreSQL database (Neon, Supabase, RDS, …), use
+   its **pooled** connection string as `DATABASE_URL`, and run
+   `DATABASE_URL=… npm run db:migrate` once (and after each release that adds
+   a file to `db/migrations`).
+5. Set `CRON_SECRET`. `vercel.json` schedules `/api/ingest` daily at 01:17 UTC
+   (06:47 IST); Vercel sends the secret automatically.
+6. Deploy. The app can be installed from the browser on Android (Chrome →
    *Install app*) and iOS (Safari → Share → *Add to Home Screen*).
-
-### Database (production, Phase 6)
-
-```bash
-npx prisma migrate deploy                 # create tables from prisma/schema.prisma
-psql "$DATABASE_URL" -f db/partitioning.sql   # monthly partitions + daily rollup view
-```
-
-Create next month's partition on a schedule
-(`SELECT ensure_snapshot_partition(date_trunc('month', now() + interval '1 month')::date);`)
-and refresh `daily_product_rollups` after each ingestion run.
 
 ## Environment variables
 
 | Variable | Required | Purpose |
 |---|---|---|
 | `APP_MODE` | no (default `demo`) | `demo` uses the synthetic dataset; `production` refuses demo data |
-| `DATABASE_URL` | production | PostgreSQL connection string |
-| `AUTH_SECRET` | production | Session signing secret (32+ random bytes) |
+| `DATABASE_URL` | production | PostgreSQL connection string (pooled on serverless) |
+| `DATABASE_POOL_MAX` | no (default 5) | Connections per server instance |
+| `CRON_SECRET` | production | Bearer secret for the scheduled `/api/ingest` job |
+| `ANTHROPIC_API_KEY` | for AI | Enables Amazon Pulse AI (Claude Opus 5.5) |
+| `AI_QUESTIONS_PER_HOUR` | no (default 30) | Per-user limit on AI questions |
 | `PAAPI_ACCESS_KEY`, `PAAPI_SECRET_KEY` | optional | Product Advertising API credentials (secret) |
 | `PAAPI_PARTNER_TAG` | with PA-API | Associates tracking ID, e.g. `yourtag-21` |
 | `PAAPI_HOST` | with PA-API | `webservices.amazon.in` |
@@ -108,6 +121,8 @@ src/components/          UI primitives (shadcn-style on Radix), charts (Recharts
 src/lib/analytics/       pure analytics: periods, engine, trend, opportunity, profit, narrative
 src/lib/data/            repository (demo / production) and the demo generator
 src/lib/providers/       permitted data-source adapters (PA-API, SP-API, licensed, CSV)
-prisma/, db/             PostgreSQL schema and partitioning
-tests/                   unit tests (node:test via tsx)
+src/lib/auth/            password hashing and database sessions
+src/lib/ai/              Amazon Pulse AI: tools over the analytics engine + Claude call
+db/migrations/           PostgreSQL schema (plain SQL, applied by scripts/migrate.mts)
+tests/                   unit and database integration tests (node:test via tsx)
 ```

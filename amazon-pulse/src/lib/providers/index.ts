@@ -23,6 +23,8 @@ export interface ProductDataProvider {
   limitations: string[];
   envVars: { name: string; description: string; secret: boolean }[];
   docsUrl: string;
+  /** False until the adapter's API calls are written and tested with real credentials. */
+  implemented: boolean;
   /** Collect a snapshot batch for the given ASINs on `date`. */
   collect(asins: string[], date: ISODate): Promise<ProviderBatch>;
 }
@@ -51,6 +53,7 @@ export const PROVIDERS: ProductDataProvider[] = [
       { name: "PAAPI_HOST", description: "webservices.amazon.in", secret: false },
     ],
     docsUrl: "https://webservices.amazon.com/paapi5/documentation/",
+    implemented: false,
     async collect() {
       throw new NotConnectedError("PA-API");
     },
@@ -72,6 +75,7 @@ export const PROVIDERS: ProductDataProvider[] = [
       { name: "SPAPI_ENDPOINT", description: "https://sellingpartnerapi-eu.amazon.com", secret: false },
     ],
     docsUrl: "https://developer-docs.amazon.com/sp-api/",
+    implemented: false,
     async collect() {
       throw new NotConnectedError("SP-API");
     },
@@ -86,6 +90,7 @@ export const PROVIDERS: ProductDataProvider[] = [
       { name: "RESEARCH_API_KEY", description: "Provider API key", secret: true },
     ],
     docsUrl: "https://keepa.com/#!discuss/t/keepa-api/",
+    implemented: false,
     async collect() {
       throw new NotConnectedError("Licensed provider");
     },
@@ -97,6 +102,7 @@ export const PROVIDERS: ProductDataProvider[] = [
     limitations: ["Data is only as accurate as the file", "Each row must carry a capture date; rows without one are rejected"],
     envVars: [],
     docsUrl: "/data-sources#csv-format",
+    implemented: true, // via upload, not the scheduled job
     async collect() {
       throw new NotConnectedError("CSV import");
     },
