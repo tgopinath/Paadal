@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 import { PageHeader } from "@/components/common/page-header";
+import { NoDataYet } from "@/components/common/states";
 import { PanelSkeleton, TableSkeleton } from "@/components/common/skeletons";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -50,6 +51,7 @@ export default function OpportunitiesPage({ searchParams }: { searchParams: Prom
 async function Opportunities({ searchParams }: { searchParams: Promise<Params> }) {
   const params = await searchParams;
   const { ds } = await getData();
+  if (ds.products.length === 0) return <NoDataYet />;
   const all = productSummaries(ds).map((s) => opportunity(ds, s));
   const scored = all.filter((o) => o.score != null).sort((a, b) => b.score! - a.score!);
   const cls = (["high", "medium", "low"] as const).find((c) => c === params.class);

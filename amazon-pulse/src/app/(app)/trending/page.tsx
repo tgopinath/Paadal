@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { Info, TrendingUp } from "lucide-react";
 import { PageHeader } from "@/components/common/page-header";
-import { EmptyState } from "@/components/common/states";
+import { EmptyState, NoDataYet } from "@/components/common/states";
 import { TableSkeleton } from "@/components/common/skeletons";
 import { Card } from "@/components/ui/card";
 import { Sparkline } from "@/components/charts/sparkline";
@@ -37,6 +37,7 @@ async function Trending({ searchParams }: { searchParams: Promise<{ lens?: strin
   const { lens: raw } = await searchParams;
   const lens = (LENSES.some((l) => l.key === raw) ? raw : "week") as Lens;
   const { ds } = await getData();
+  if (ds.products.length === 0) return <NoDataYet />;
   const { rows, note } = trendingRows(ds, lens);
   const meta = LENSES.find((l) => l.key === lens)!;
 

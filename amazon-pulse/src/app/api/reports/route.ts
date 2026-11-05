@@ -1,7 +1,11 @@
 import { getData } from "@/lib/data/repository";
+import { authRequired, getCurrentUser } from "@/lib/auth/session";
 import { buildReport, reportToCSV, REPORT_TYPES, type ReportType } from "@/lib/reports";
 
 export async function GET(request: Request) {
+  if (authRequired() && !(await getCurrentUser())) {
+    return Response.json({ error: "Sign in required" }, { status: 401 });
+  }
   const url = new URL(request.url);
   const type = url.searchParams.get("type") as ReportType;
   if (!REPORT_TYPES.some((t) => t.key === type)) {

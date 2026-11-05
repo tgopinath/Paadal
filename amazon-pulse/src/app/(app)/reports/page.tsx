@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { Download, FileSpreadsheet } from "lucide-react";
 import { PageHeader } from "@/components/common/page-header";
-import { NoHistory } from "@/components/common/states";
+import { NoHistory, NoDataYet } from "@/components/common/states";
 import { TableSkeleton } from "@/components/common/skeletons";
 import { PrintButton } from "@/components/common/print-button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -35,6 +35,7 @@ async function Reports({ searchParams }: { searchParams: Promise<Params> }) {
   const choices = PERIOD_CHOICES[type] ?? [];
   const p = choices.some(([k]) => k === params.p) ? params.p! : def.defaultPeriod;
   const { ds, sources, firstSnapshot } = await getData();
+  if (ds.products.length === 0) return <NoDataYet />;
   const report = buildReport(ds, sources, type, { p }, new Date().toISOString());
   const csvHref = `/api/reports?type=${type}${def.periodic ? `&p=${p}` : ""}`;
 

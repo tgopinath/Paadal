@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 import { PageHeader } from "@/components/common/page-header";
+import { NoDataYet } from "@/components/common/states";
 import { TableSkeleton } from "@/components/common/skeletons";
 import { Delta } from "@/components/common/delta";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -32,6 +33,7 @@ export default function CategoriesPage({ searchParams }: { searchParams: Promise
 async function Categories({ searchParams }: { searchParams: Promise<{ c?: string }> }) {
   const { c } = await searchParams;
   const { ds } = await getData();
+  if (ds.products.length === 0) return <NoDataYet />;
   const range = { start: addDays(ds.today, -29), end: ds.today };
   const compare = { start: addDays(ds.today, -59), end: addDays(ds.today, -30) };
   const rows = categoryRows(ds, range, compare);

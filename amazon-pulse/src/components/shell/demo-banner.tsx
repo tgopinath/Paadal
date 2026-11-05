@@ -1,8 +1,20 @@
 import Link from "next/link";
 import { FlaskConical } from "lucide-react";
+import { Suspense } from "react";
+import { connection } from "next/server";
 import { appMode } from "@/lib/data/repository";
 
 export function DemoBanner() {
+  return (
+    <Suspense fallback={null}>
+      <DemoBannerInner />
+    </Suspense>
+  );
+}
+
+/** Reads APP_MODE at request time so the deployed setting always wins. */
+async function DemoBannerInner() {
+  await connection();
   if (appMode() !== "demo") return null;
   return (
     <div role="note" className="border-b border-amber-200 bg-warning-soft px-4 py-2 text-[13px] text-warning sm:px-6 lg:px-8">

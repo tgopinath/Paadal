@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { GitCompareArrows } from "lucide-react";
 import { PageHeader } from "@/components/common/page-header";
-import { EmptyState } from "@/components/common/states";
+import { EmptyState, NoDataYet } from "@/components/common/states";
 import { TableSkeleton } from "@/components/common/skeletons";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -34,6 +34,7 @@ export default function ComparePage({ searchParams }: { searchParams: Promise<{ 
 async function Compare({ searchParams }: { searchParams: Promise<{ asins?: string }> }) {
   const { asins } = await searchParams;
   const { ds } = await getData();
+  if (ds.products.length === 0) return <NoDataYet />;
   const all = productSummaries(ds);
   const byAsin = new Map(all.map((s) => [s.product.asin, s]));
   const selected = [...new Set((asins ?? "").split(",").map((a) => a.trim().toUpperCase()))].filter((a) => byAsin.has(a)).slice(0, 5);

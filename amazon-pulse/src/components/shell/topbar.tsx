@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Search } from "lucide-react";
 import { Logo } from "./logo";
+import { UserMenu } from "./user-menu";
 
 /**
  * Global search. A plain GET form, so it works before hydration and on
@@ -24,6 +25,9 @@ export function Topbar() {
             className="h-10 w-full rounded-lg border border-input bg-surface pl-9 pr-3 text-sm placeholder:text-subtle-foreground focus:bg-white"
           />
         </form>
+        <div className="ml-auto">
+          <UserMenu />
+        </div>
       </div>
     </header>
   );

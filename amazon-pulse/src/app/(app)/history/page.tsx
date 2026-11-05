@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { ArrowDownRight, ArrowUpRight, CalendarClock } from "lucide-react";
 import { PageHeader } from "@/components/common/page-header";
-import { CoverageNote, EmptyState, NoHistory } from "@/components/common/states";
+import { CoverageNote, EmptyState, NoHistory, NoDataYet } from "@/components/common/states";
 import { PanelSkeleton, TableSkeleton } from "@/components/common/skeletons";
 import { Delta } from "@/components/common/delta";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -44,6 +44,7 @@ export default function HistoryPage({ searchParams }: { searchParams: Promise<Pe
 async function History({ searchParams }: { searchParams: Promise<PeriodParams> }) {
   const params = await searchParams;
   const { ds, firstSnapshot } = await getData();
+  if (ds.products.length === 0) return <NoDataYet />;
   const per = resolvePeriod(params, ds.today);
   const firstYear = Number((firstSnapshot ?? ds.today).slice(0, 4));
 

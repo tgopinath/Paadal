@@ -72,3 +72,24 @@ export function ErrorState({ title, message, action }: { title: string; message:
     </div>
   );
 }
+
+/** Production install with no snapshots yet: explain the next step instead of empty charts. */
+export function NoDataYet() {
+  return (
+    <EmptyState
+      icon={CalendarX2}
+      title="No product data collected yet"
+      description={
+        <>
+          Analytics appear once the first snapshots arrive. Import your historical CSV or connect a provider on the Data Sources page. Amazon Pulse doesn&apos;t show estimates or sample data in
+          production.
+        </>
+      }
+      action={
+        <a href="/data-sources" className="inline-flex h-9 items-center rounded-md bg-primary px-4 text-sm font-medium text-white hover:bg-primary-hover">
+          Go to Data Sources
+        </a>
+      }
+    />
+  );
+}

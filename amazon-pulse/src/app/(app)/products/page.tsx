@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { PageHeader } from "@/components/common/page-header";
-import { EmptyState } from "@/components/common/states";
+import { EmptyState, NoDataYet } from "@/components/common/states";
 import { TableSkeleton } from "@/components/common/skeletons";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -36,6 +36,7 @@ export default function ProductsPage({ searchParams }: { searchParams: Promise<E
 async function Explorer({ searchParams }: { searchParams: Promise<ExplorerParams> }) {
   const params = await searchParams;
   const { ds } = await getData();
+  if (ds.products.length === 0) return <NoDataYet />;
   const all = productSummaries(ds);
   const subcategories: Record<string, string[]> = {};
   for (const s of all) {

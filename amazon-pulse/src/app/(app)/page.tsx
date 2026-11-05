@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import { PageHeader } from "@/components/common/page-header";
+import { NoDataYet } from "@/components/common/states";
 import { DataFreshness } from "@/components/common/freshness";
 import { KpiCard } from "@/components/overview/kpi-card";
 import { DemandPanel } from "@/components/overview/demand-panel";
@@ -32,6 +33,7 @@ export default function OverviewPage() {
 
 async function OverviewContent() {
   const { ds } = await getData();
+  if (ds.products.length === 0) return <NoDataYet />;
   const month = resolvePeriod({ p: "this_month" }, ds.today);
   const kpis = buildKpis(ds);
   return (
