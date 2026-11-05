@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
-    "test": "tsx --conditions=react-server --test tests/analytics.test.ts",
+    "test": "tsx --conditions=react-server --test tests/analytics.test.ts tests/csv.test.ts",
     "test:db": "tsx --conditions=react-server --test tests/db.integration.test.ts",
     "db:migrate": "tsx scripts/migrate.mts"
   },

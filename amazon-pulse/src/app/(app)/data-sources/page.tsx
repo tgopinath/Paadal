@@ -5,18 +5,42 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { CSV_COLUMNS, PROVIDERS, providerStatus } from "@/lib/providers";
+import { Suspense } from "react";
+import { connection } from "next/server";
 import { appMode } from "@/lib/data/repository";
+import { db, hasDatabase } from "@/lib/db";
+import { getCurrentUser } from "@/lib/auth/session";
+import { CsvImport } from "@/components/data-sources/csv-import";
+import { TableSkeleton } from "@/components/common/skeletons";
 
 export const metadata: Metadata = { title: "Data Sources" };
 
 export default function DataSourcesPage() {
-  const mode = appMode();
   return (
     <>
       <PageHeader
         title="Data Sources"
         description="Amazon Pulse only uses permitted sources. Credentials are read from environment variables or your secrets manager on the server; they are never stored in the database or shown in the browser."
       />
+      <Suspense fallback={<TableSkeleton rows={6} />}>
+        <DataSources />
+      </Suspense>
+    </>
+  );
+}
+
+/** Reads environment and session at request time, so deployed settings always win. */
+async function DataSources() {
+  await connection();
+  const mode = appMode();
+  const user = hasDatabase() ? await getCurrentUser() : null;
+  const runs = hasDatabase()
+    ? await db()<{ source: string; status: string; started_at: Date; rows_written: number; note: string | null; error: string | null }[]>`
+        SELECT source, status, started_at, rows_written, note, error FROM ingestion_runs ORDER BY started_at DESC LIMIT 8`
+    : [];
+  return (
+    <>
+
       <div className="space-y-6">
         <Card className={mode === "demo" ? "border-amber-200 bg-warning-soft/60" : ""}>
           <CardContent className="flex flex-wrap items-center justify-between gap-3 pt-5">
@@ -94,12 +118,65 @@ export default function DataSourcesPage() {
                       ))}
                     </ul>
                   )}
-                  <p className="text-[11px] text-subtle-foreground">Ingestion adapter: planned for Phase 6.</p>
+                  <p className="text-[11px] text-subtle-foreground">{p.id === "csv" ? "Import below." : "Collection adapter: waiting for credentials."}</p>
                 </CardContent>
               </Card>
             );
           })}
         </div>
+
+        <Card>
+          <CardHeader>
+            <div>
+              <CardTitle>Import history from CSV</CardTitle>
+              <CardDescription>Back-fill history from your own exports. Check the file first; only valid rows are imported, and re-importing the same product and date updates it in place.</CardDescription>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <CsvImport
+              enabled={hasDatabase() && !!user}
+              productionMode={mode === "production"}
+              reason={!hasDatabase() ? "CSV import needs a database. Set DATABASE_URL (see README)." : "Sign in to import data."}
+            />
+          </CardContent>
+        </Card>
+
+        {runs.length > 0 && (
+          <Card className="overflow-hidden">
+            <CardHeader>
+              <div>
+                <CardTitle>Recent collection runs</CardTitle>
+                <CardDescription>Every import and provider run is logged, so gaps and failures stay visible.</CardDescription>
+              </div>
+            </CardHeader>
+            <CardContent className="px-0 pb-0 sm:px-0">
+              <Table>
+                <THead>
+                  <tr>
+                    <TH>Started</TH>
+                    <TH>Source</TH>
+                    <TH>Status</TH>
+                    <TH className="text-right">Rows</TH>
+                    <TH>Note</TH>
+                  </tr>
+                </THead>
+                <TBody>
+                  {runs.map((r, i) => (
+                    <TR key={i}>
+                      <TD className="whitespace-nowrap text-[13px]">{r.started_at.toLocaleString("en-IN", { timeZone: "Asia/Kolkata", dateStyle: "medium", timeStyle: "short" })}</TD>
+                      <TD className="text-[13px]">{r.source}</TD>
+                      <TD>
+                        <Badge variant={r.status === "succeeded" ? "positive" : r.status === "failed" ? "negative" : "neutral"}>{r.status}</Badge>
+                      </TD>
+                      <TD className="tabular text-right text-[13px]">{r.rows_written.toLocaleString("en-IN")}</TD>
+                      <TD className="max-w-[320px] truncate text-xs text-muted-foreground">{r.error ?? r.note ?? ""}</TD>
+                    </TR>
+                  ))}
+                </TBody>
+              </Table>
+            </CardContent>
+          </Card>
+        )}
 
         <Card id="csv-format" className="scroll-mt-24">
           <CardHeader>

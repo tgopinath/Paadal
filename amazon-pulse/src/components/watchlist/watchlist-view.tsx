@@ -10,7 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/common/states";
 import { Sparkline } from "@/components/charts/sparkline";
 import { Delta } from "@/components/common/delta";
-import { actions, useStore, type AlertRule, type AlertType } from "@/lib/client-store";
+import { actions, isAccountMode, useStore, type AlertRule, type AlertType } from "@/lib/client-store";
 import { formatINR, formatInt } from "@/lib/format";
 
 export interface WatchItem {
@@ -49,7 +49,8 @@ function evaluate(rule: AlertRule, item: WatchItem): boolean | null {
 
 export function WatchlistView({ items }: { items: WatchItem[] }) {
   const { collections, alerts, hydrated } = useStore();
-  const [active, setActive] = useState("all");
+  const [activeRaw, setActive] = useState("all");
+  const active = actions.resolveCollectionId(activeRaw);
   const [newName, setNewName] = useState("");
   const byAsin = useMemo(() => new Map(items.map((i) => [i.asin, i])), [items]);
 
@@ -147,7 +148,9 @@ export function WatchlistView({ items }: { items: WatchItem[] }) {
         </ul>
       )}
       <p className="text-xs text-muted-foreground">
-        Your watchlist, collections and alerts are saved on this device. Once accounts are enabled, they sync to your account and alerts arrive by email or push.
+        {isAccountMode()
+          ? "Saved to your account. Alerts are checked against the latest snapshot whenever you open this page."
+          : "Saved on this device. In production mode, signing in saves your watchlist, collections and alerts to your account."}
       </p>
     </div>
   );
