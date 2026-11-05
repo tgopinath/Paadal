@@ -71,10 +71,10 @@ APP_MODE=production DATABASE_URL=postgres://localhost/amazon_pulse npm run dev
 1. Import the repository in Vercel and set **Root Directory** to `amazon-pulse`.
 2. Framework preset: Next.js. The build and install commands use the defaults.
 3. Add the environment variables below. For the demo, `APP_MODE=demo` is enough.
-4. For production: create a PostgreSQL database (Neon, Supabase, RDS, …), use
-   its **pooled** connection string as `DATABASE_URL`, and run
-   `DATABASE_URL=… npm run db:migrate` once (and after each release that adds
-   a file to `db/migrations`).
+4. For production: create a PostgreSQL database (Neon, Supabase, RDS, …) and
+   use its **pooled** connection string as `DATABASE_URL`. Migrations run
+   automatically at the start of every build (`npm run build`), and are skipped
+   when `DATABASE_URL` isn't set.
 5. Set `CRON_SECRET`. `vercel.json` schedules `/api/ingest` daily at 01:17 UTC
    (06:47 IST); Vercel sends the secret automatically.
 6. Deploy. The app can be installed from the browser on Android (Chrome →

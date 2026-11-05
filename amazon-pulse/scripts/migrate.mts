@@ -10,6 +10,11 @@ import postgres from "postgres";
 
 const url = process.env.DATABASE_URL;
 if (!url) {
+  // `--if-configured` is used by the build: no database yet means nothing to migrate.
+  if (process.argv.includes("--if-configured")) {
+    console.log("DATABASE_URL not set; skipping migrations.");
+    process.exit(0);
+  }
   console.error("DATABASE_URL is not set.");
   process.exit(1);
 }
