@@ -26,6 +26,8 @@ export interface SpApiConfig {
   refreshToken: string;
   marketplaceId: string;
   endpoint: string;
+  /** Login with Amazon token URL; overridable only for tests and sandboxes. */
+  lwaUrl?: string;
   /** Max ASINs priced per run; pricing allows ~0.5 requests/second. */
   maxAsins: number;
   /** Injected in tests. */
@@ -49,6 +51,7 @@ export function spApiConfigFromEnv(): SpApiConfig {
     refreshToken: need("SPAPI_REFRESH_TOKEN"),
     marketplaceId: process.env.SPAPI_MARKETPLACE_ID || AMAZON_IN_MARKETPLACE,
     endpoint: (process.env.SPAPI_ENDPOINT || "https://sellingpartnerapi-eu.amazon.com").replace(/\/$/, ""),
+    lwaUrl: process.env.SPAPI_LWA_URL || LWA_TOKEN_URL,
     maxAsins: Number(process.env.SPAPI_MAX_ASINS ?? 40),
   };
 }
@@ -88,7 +91,7 @@ class SpApiClient {
 
   private async accessToken(): Promise<string> {
     if (this.token && this.token.expires > Date.now() + 60_000) return this.token.value;
-    const res = await this.fetch(LWA_TOKEN_URL, {
+    const res = await this.fetch(this.cfg.lwaUrl ?? LWA_TOKEN_URL, {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8" },
       body: new URLSearchParams({
@@ -222,7 +225,8 @@ export function rowFromCatalog(item: CatalogItem, marketplaceId: string) {
   const ranks = item.salesRanks?.find((s) => s.marketplaceId === marketplaceId) ?? item.salesRanks?.[0];
   const imgs = item.images?.find((s) => s.marketplaceId === marketplaceId) ?? item.images?.[0];
   // The display-group rank is the familiar "#N in Category" Best Sellers Rank.
-  const bsr = ranks?.displayGroupRanks?.[0]?.rank ?? ranks?.classificationRanks?.[0]?.rank ?? null;
+  const top = ranks?.displayGroupRanks?.[0] ?? ranks?.classificationRanks?.[0];
+  const bsr = top?.rank ?? null;
   return {
     title: sum?.itemName ?? null,
     brand: sum?.brand ?? null,
@@ -230,7 +234,45 @@ export function rowFromCatalog(item: CatalogItem, marketplaceId: string) {
     subcategory: sum?.browseClassification?.displayName ?? ranks?.classificationRanks?.[0]?.title ?? null,
     imageUrl: imgs?.images?.find((i) => i.variant === "MAIN")?.link ?? imgs?.images?.[0]?.link ?? null,
     bsr,
+    rankCategory: top?.title ?? null,
   };
+}
+
+export function spApiConfigured(): boolean {
+  return Boolean(process.env.SPAPI_LWA_CLIENT_ID && process.env.SPAPI_LWA_CLIENT_SECRET && process.env.SPAPI_REFRESH_TOKEN);
+}
+
+export interface DiscoveredProduct {
+  asin: string;
+  title: string | null;
+  brand: string | null;
+  categoryId: string | null;
+  subcategory: string | null;
+  imageUrl: string | null;
+  bsr: number | null;
+  rankCategory: string | null;
+}
+
+const INCLUDED = "summaries,salesRanks,images";
+
+/** Keyword search of the Amazon.in catalog (searchCatalogItems), with Best Sellers Ranks. */
+export async function searchCatalog(cfg: SpApiConfig, keywords: string, pageToken?: string): Promise<{ items: DiscoveredProduct[]; total: number; next: string | null }> {
+  const api = new SpApiClient(cfg);
+  const qs = new URLSearchParams({ marketplaceIds: cfg.marketplaceId, keywords: keywords.replace(/,/g, " ").trim(), includedData: INCLUDED, pageSize: "20" });
+  if (pageToken) qs.set("pageToken", pageToken);
+  const res = await api.call<{ numberOfResults?: number; pagination?: { nextToken?: string }; items?: CatalogItem[] }>("GET", `/catalog/2022-04-01/items?${qs.toString()}`);
+  return {
+    items: (res.items ?? []).map((it) => ({ asin: it.asin, ...rowFromCatalog(it, cfg.marketplaceId) })),
+    total: res.numberOfResults ?? 0,
+    next: res.pagination?.nextToken ?? null,
+  };
+}
+
+/** One catalog item (getCatalogItem). */
+export async function fetchCatalogItem(cfg: SpApiConfig, asin: string): Promise<DiscoveredProduct> {
+  const api = new SpApiClient(cfg);
+  const item = await api.call<CatalogItem>("GET", `/catalog/2022-04-01/items/${asin}?marketplaceIds=${cfg.marketplaceId}&includedData=${INCLUDED}`);
+  return { asin, ...rowFromCatalog(item, cfg.marketplaceId) };
 }
 
 export async function collectSpApi(cfg: SpApiConfig, trackedAsins: string[], today: ISODate): Promise<{ rows: IngestRow[]; notes: string[] }> {

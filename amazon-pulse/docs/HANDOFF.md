@@ -30,6 +30,7 @@ Attach the repository (or upload the zip), then paste:
 | Daily scheduled job `/api/ingest` (partitions, rollups, alerts, cleanup) | Done; scheduled in `vercel.json` |
 | Amazon Pulse AI (Claude Opus 5.5, answers only from analytics tools) | Done; needs `ANTHROPIC_API_KEY`; not yet tried with a real key |
 | SP-API daily collection (your seller account) | Built; **waiting for credentials** (step 4A) |
+| Discover page: keyword search ranked by BSR, "Track a product" by ASIN or link | Built; uses the same SP-API credentials |
 | PA-API / Keepa collection adapters | Not built (choose if needed) |
 | Alert emails | **Not started**: optional (step 5) |
 

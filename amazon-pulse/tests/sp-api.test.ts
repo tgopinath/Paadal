@@ -90,3 +90,47 @@ test("price falls back to the lowest new offer; categories map", () => {
   assert.equal(mapCategory("automotive_display_on_website"), "other");
   assert.equal(mapCategory(null), null);
 });
+
+import { parseAsin } from "../src/lib/asin";
+import { searchCatalog, fetchCatalogItem } from "../src/lib/providers/sp-api";
+
+test("parses ASINs from codes and amazon.in links", () => {
+  assert.deepEqual(parseAsin("b0abcdefgh"), { asin: "B0ABCDEFGH" });
+  assert.deepEqual(parseAsin("https://www.amazon.in/Acme-Bottle/dp/B0ABCDEFGH/ref=sr_1_1?keywords=x"), { asin: "B0ABCDEFGH" });
+  assert.deepEqual(parseAsin("https://www.amazon.in/gp/product/B0ABCDEFGH"), { asin: "B0ABCDEFGH" });
+  assert.ok("error" in parseAsin("https://amzn.in/d/abc123"));
+  assert.ok("error" in parseAsin("not a product"));
+});
+
+test("catalog search sends keywords and returns ranks", async () => {
+  const urls: string[] = [];
+  const f = (async (input: RequestInfo | URL) => {
+    const url = String(input);
+    urls.push(url);
+    if (url.includes("auth/o2/token")) return new Response(JSON.stringify({ access_token: "t", expires_in: 3600 }));
+    if (url.includes("/items/B0FASTSELL")) {
+      return new Response(JSON.stringify({ asin: "B0FASTSELL", summaries: [{ marketplaceId: "A21TJRUUN4KGV", itemName: "Fast", brand: "Acme" }], salesRanks: [{ marketplaceId: "A21TJRUUN4KGV", displayGroupRanks: [{ rank: 120, title: "Home & Kitchen" }] }] }));
+    }
+    return new Response(
+      JSON.stringify({
+        numberOfResults: 2,
+        pagination: { nextToken: "NEXT" },
+        items: [
+          { asin: "B0SLOWSELL", summaries: [{ marketplaceId: "A21TJRUUN4KGV", itemName: "Slow", websiteDisplayGroup: "kitchen_display_on_website" }], salesRanks: [{ marketplaceId: "A21TJRUUN4KGV", displayGroupRanks: [{ rank: 90000, title: "Home & Kitchen" }] }] },
+          { asin: "B0FASTSELL", summaries: [{ marketplaceId: "A21TJRUUN4KGV", itemName: "Fast" }], salesRanks: [{ marketplaceId: "A21TJRUUN4KGV", displayGroupRanks: [{ rank: 120, title: "Home & Kitchen" }] }] },
+        ],
+      }),
+    );
+  }) as typeof fetch;
+  const c = { clientId: "c", clientSecret: "s", refreshToken: "r", marketplaceId: "A21TJRUUN4KGV", endpoint: "https://sp.example", maxAsins: 40, fetch: f, sleep: async () => {} };
+  const r = await searchCatalog(c, "air, fryer");
+  const q = new URL(urls[1]).searchParams;
+  assert.equal(q.get("keywords"), "air  fryer");
+  assert.equal(q.get("includedData"), "summaries,salesRanks,images");
+  assert.equal(q.get("pageSize"), "20");
+  assert.equal(r.next, "NEXT");
+  assert.deepEqual(r.items.map((i) => [i.asin, i.bsr, i.rankCategory]), [["B0SLOWSELL", 90000, "Home & Kitchen"], ["B0FASTSELL", 120, "Home & Kitchen"]]);
+  const one = await fetchCatalogItem(c, "B0FASTSELL");
+  assert.deepEqual([one.asin, one.title, one.brand, one.bsr], ["B0FASTSELL", "Fast", "Acme", 120]);
+  assert.match(urls.at(-1)!, /\/catalog\/2022-04-01\/items\/B0FASTSELL\?marketplaceIds=A21TJRUUN4KGV&includedData=summaries,salesRanks,images/);
+});

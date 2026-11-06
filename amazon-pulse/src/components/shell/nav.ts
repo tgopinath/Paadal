@@ -8,6 +8,7 @@ import {
   LayoutDashboard,
   Lightbulb,
   PackageSearch,
+  Telescope,
   Settings,
   Shapes,
   Star,
@@ -28,6 +29,7 @@ export const NAV_SECTIONS: { label: string; items: NavItem[] }[] = [
     items: [
       { href: "/", label: "Overview", icon: LayoutDashboard },
       { href: "/products", label: "Product Explorer", icon: PackageSearch },
+      { href: "/discover", label: "Discover", icon: Telescope },
       { href: "/history", label: "Historical Analytics", icon: CalendarRange },
       { href: "/trending", label: "Trending Now", icon: TrendingUp },
       { href: "/categories", label: "Categories", icon: Shapes },
