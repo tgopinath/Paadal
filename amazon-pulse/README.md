@@ -37,6 +37,7 @@ profit estimates.
 | Profit calculator saves your costs per product; report history with re-download | ✅ (production, signed in) |
 | Scheduled job: partitions, rollups, alert evaluation, cleanup | ✅ |
 | Amazon Pulse AI (Claude, answers only from analytics tools) | ✅ needs `ANTHROPIC_API_KEY` |
+| Discover: keyword search of the Amazon.in catalog ranked by Best Sellers Rank; track any ASIN or amazon.in link | ✅ needs Seller Central app credentials |
 | Selling Partner API daily collection (verified sales, price, rank, catalog) | ✅ needs Seller Central app credentials (see `docs/HANDOFF.md`, step 4A) |
 | PA-API / licensed-provider collection adapters | Not built |
 | Alert delivery by email or push | Not started (needs an email provider) |
