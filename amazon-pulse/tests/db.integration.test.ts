@@ -53,6 +53,17 @@ test("database integration", { skip: !url && "TEST_DATABASE_URL not set" }, asyn
     assert.equal(n, rows.length, "re-import must update in place, not duplicate");
   });
 
+  await t.test("a partial observation keeps the fields it didn't observe", async () => {
+    const r = rows[0];
+    await ingest(sql, "csv", [{ asin: r.asin, date: r.date, verifiedUnits: 9 }], "sales only");
+    const [row] = await sql<{ price: number; best_sellers_rank: number; verified_units: number }[]>`
+      SELECT s.price, s.best_sellers_rank, s.verified_units FROM product_snapshots s JOIN products p ON p.id = s.product_id
+      WHERE p.asin = ${r.asin} AND s.captured_date = ${r.date}::date`;
+    assert.equal(row.price, r.price);
+    assert.equal(row.best_sellers_rank, r.bsr);
+    assert.equal(row.verified_units, 9);
+  });
+
   await t.test("demo-source rows never reach the analytics view", async () => {
     const [p] = await sql<{ id: string }[]>`SELECT id FROM products LIMIT 1`;
     await sql`SELECT ensure_snapshot_partition('2026-11-01')`;

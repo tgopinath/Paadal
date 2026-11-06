@@ -49,22 +49,14 @@ export async function GET(request: Request) {
       providers[p.id] = "skipped: adapter not implemented yet";
       continue;
     }
-    if (!asins.length) {
-      providers[p.id] = "skipped: no tracked products";
-      continue;
-    }
     try {
       const batch = await p.collect(asins, today);
-      const res = await ingest(
-        sql,
-        p.id,
-        batch.snapshots.map((s) => {
-          const meta = batch.products.find((x) => x.asin === s.asin);
-          return { asin: s.asin, date: s.date, title: meta?.title, brand: meta?.brand, categoryId: meta?.categoryId, subcategory: meta?.subcategory, imageUrl: meta?.imageUrl, amazonUrl: meta?.amazonUrl, price: s.price, listPrice: s.listPrice, rating: s.rating, reviewCount: s.reviewCount, bsr: s.bsr };
-        }),
-        "scheduled collection",
-      );
-      providers[p.id] = `ok: ${res.rowsWritten} rows`;
+      if (!batch.rows.length) {
+        providers[p.id] = `no data: ${batch.notes.join(" ") || "the source returned nothing"}`;
+        continue;
+      }
+      const res = await ingest(sql, p.id, batch.rows, ["scheduled collection", ...batch.notes].join(" · ").slice(0, 1000));
+      providers[p.id] = `ok: ${res.rowsWritten} rows${batch.notes.length ? ` (${batch.notes.join(" ")})` : ""}`;
     } catch (e) {
       providers[p.id] = `failed: ${(e as Error).message}`;
     }

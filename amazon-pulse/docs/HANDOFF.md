@@ -27,7 +27,8 @@ Attach the repository (or upload the zip), then paste:
 | CSV and Excel exports, print to PDF | Done |
 | Daily scheduled job `/api/ingest` (partitions, rollups, alerts, cleanup) | Done; scheduled in `vercel.json` |
 | Amazon Pulse AI (Claude Opus 5.5, answers only from analytics tools) | Done; needs `ANTHROPIC_API_KEY`; not yet tried with a real key |
-| PA-API / SP-API / Keepa collection adapters | **Waiting**: choose a source and get credentials (step 4) |
+| SP-API daily collection (your seller account) | Built; **waiting for credentials** (step 4A) |
+| PA-API / Keepa collection adapters | Not built (choose if needed) |
 | Alert emails | **Not started**: optional (step 5) |
 
 Checks: `npm run lint`, `npm run typecheck`, `npm test` (23 tests), `npm run test:db` (needs a disposable database), `npm run build`.
@@ -65,7 +66,17 @@ Any long random string. On Mac/Linux, run `openssl rand -hex 32`. Otherwise, gen
 | C. Keepa API (licensed) | Long market-wide price and rank history | A paid subscription at keepa.com |
 | D. CSV only | Your own exports | Nothing; works today |
 
-After choosing, ask Claude to implement that adapter in `src/lib/providers/index.ts`. It's currently a stub with `implemented: false`, and the scheduled job skips it with a reason.
+**Option A is built** (`src/lib/providers/sp-api.ts`). It runs daily once these are set in Vercel:
+
+1. In **Seller Central (sellercentral.amazon.in)**, go to **Apps and Services → Develop Apps**. Register as a **private developer** (an app for your own business only). Request the roles **Product Listing**, **Pricing**, and **Brand Analytics** or **Selling Partner Insights** (needed for the sales report). Approval can take a few days.
+2. Once approved, click **Add new app client**, name it `Amazon Pulse`, choose **SP API**, and tick the same roles.
+3. Click **View** under LWA credentials and copy the **Client identifier** and **Client secret**.
+4. Click **Authorize** on the app (self-authorisation) and copy the **refresh token** (it starts with `Atzr|`).
+5. In Vercel → Settings → Environment Variables, add `SPAPI_LWA_CLIENT_ID`, `SPAPI_LWA_CLIENT_SECRET` and `SPAPI_REFRESH_TOKEN`, then redeploy.
+
+The daily job (06:47 IST) then imports yesterday's verified units per ASIN, plus today's title, brand, category, image, Best Sellers Rank and price for up to 40 ASINs (`SPAPI_MAX_ASINS`). Ratings and review counts aren't available from SP-API. If the sales report role is missing, prices and ranks are still collected and the run log on **Data Sources** says why.
+
+Options B and C are still stubs (`implemented: false`).
 
 ### 5. Alert emails (optional)
 Sign up at **resend.com**, verify a domain you own, then ask Claude to add email delivery to the scheduled job (`src/app/api/ingest/route.ts`).

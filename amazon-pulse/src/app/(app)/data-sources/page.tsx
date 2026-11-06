@@ -109,7 +109,9 @@ async function DataSources() {
                             <code className="text-xs">{v.name}</code>
                             <span className="block text-[11px] text-muted-foreground">{v.description}</span>
                           </span>
-                          {st.missing.includes(v.name) ? (
+                          {v.optional && !st.missing.includes(v.name) && !process.env[v.name] ? (
+                            <span className="text-[11px] text-muted-foreground">default</span>
+                          ) : st.missing.includes(v.name) ? (
                             <span className="text-[11px] text-muted-foreground">missing</span>
                           ) : (
                             <span className="text-[11px] text-positive">set{v.secret ? " (hidden)" : ""}</span>
@@ -118,7 +120,9 @@ async function DataSources() {
                       ))}
                     </ul>
                   )}
-                  <p className="text-[11px] text-subtle-foreground">{p.id === "csv" ? "Import below." : "Collection adapter: waiting for credentials."}</p>
+                  <p className="text-[11px] text-subtle-foreground">
+                    {p.id === "csv" ? "Import below." : p.implemented ? (st.configured ? "Collected daily by the scheduled job." : "Ready: add the credentials above in Vercel.") : "Collection adapter: not built yet."}
+                  </p>
                 </CardContent>
               </Card>
             );
