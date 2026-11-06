@@ -3,12 +3,15 @@
  * Each file runs in its own transaction and is recorded in schema_migrations.
  *
  *   DATABASE_URL=postgres://… npm run db:migrate
+ * Uses DATABASE_URL_UNPOOLED when set (Neon/Vercel provide it), else DATABASE_URL.
  */
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import postgres from "postgres";
 
-const url = process.env.DATABASE_URL;
+// Migrations need a direct (non-pooled) connection: poolers in transaction
+// mode don't keep session state between statements.
+const url = process.env.DATABASE_URL_UNPOOLED || process.env.DATABASE_URL;
 if (!url) {
   // `--if-configured` is used by the build: no database yet means nothing to migrate.
   if (process.argv.includes("--if-configured")) {
@@ -21,6 +24,10 @@ if (!url) {
 
 const sql = postgres(url, { max: 1, onnotice: () => {} });
 const dir = path.join(process.cwd(), "db", "migrations");
+
+if (url.includes("-pooler")) {
+  console.warn("Warning: migrating through a pooled connection. Set DATABASE_URL_UNPOOLED to the direct connection string.");
+}
 
 try {
   await sql`CREATE TABLE IF NOT EXISTS schema_migrations (name text PRIMARY KEY, applied_at timestamptz NOT NULL DEFAULT now())`;

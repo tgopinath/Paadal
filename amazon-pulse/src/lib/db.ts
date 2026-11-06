@@ -14,7 +14,11 @@ export function hasDatabase(): boolean {
 
 export function db(): Sql {
   if (!process.env.DATABASE_URL) throw new Error("DATABASE_URL is not set.");
-  globalForDb.__pulseSql ??= postgres(process.env.DATABASE_URL, {
+  const url = process.env.DATABASE_URL;
+  globalForDb.__pulseSql ??= postgres(url, {
+    // Pooled endpoints (PgBouncer in transaction mode, e.g. Neon "-pooler")
+    // don't keep named prepared statements between transactions.
+    prepare: !url.includes("-pooler"),
     max: Number(process.env.DATABASE_POOL_MAX ?? 5),
     idle_timeout: 20,
     connect_timeout: 10,

@@ -72,7 +72,8 @@ APP_MODE=production DATABASE_URL=postgres://localhost/amazon_pulse npm run dev
 2. Framework preset: Next.js. The build and install commands use the defaults.
 3. Add the environment variables below. For the demo, `APP_MODE=demo` is enough.
 4. For production: create a PostgreSQL database (Neon, Supabase, RDS, …) and
-   use its **pooled** connection string as `DATABASE_URL`. Migrations run
+   use its **pooled** connection string as `DATABASE_URL` and its **direct**
+   one as `DATABASE_URL_UNPOOLED`. Migrations run
    automatically at the start of every build (`npm run build`), and are skipped
    when `DATABASE_URL` isn't set.
 5. Set `CRON_SECRET`. `vercel.json` schedules `/api/ingest` daily at 01:17 UTC
@@ -86,6 +87,7 @@ APP_MODE=production DATABASE_URL=postgres://localhost/amazon_pulse npm run dev
 |---|---|---|
 | `APP_MODE` | no (default `demo`) | `demo` uses the synthetic dataset; `production` refuses demo data |
 | `DATABASE_URL` | production | PostgreSQL connection string (pooled on serverless) |
+| `DATABASE_URL_UNPOOLED` | with a pooled `DATABASE_URL` | Direct connection string, used only for migrations |
 | `DATABASE_POOL_MAX` | no (default 5) | Connections per server instance |
 | `CRON_SECRET` | production | Bearer secret for the scheduled `/api/ingest` job |
 | `ANTHROPIC_API_KEY` | for AI | Enables Amazon Pulse AI (Claude Opus 5.5) |
