@@ -1,5 +1,7 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState, useTransition } from "react";
+import { Button } from "@/components/ui/button";
+import { loadCosts, saveCosts } from "@/app/(app)/opportunities/actions";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input, Label, NativeSelect } from "@/components/ui/input";
 import { calculateProfit, GST_ON_FEES_PCT, type ProfitInput } from "@/lib/analytics/profit";
@@ -17,7 +19,7 @@ export interface CalculatorProduct {
 
 const GST_RATES = [0, 5, 12, 18, 28];
 
-export function ProfitCalculator({ products, initialAsin }: { products: CalculatorProduct[]; initialAsin?: string }) {
+export function ProfitCalculator({ products, initialAsin, canSave = false }: { products: CalculatorProduct[]; initialAsin?: string; canSave?: boolean }) {
   const initial = products.find((p) => p.asin === initialAsin) ?? products[0];
   const fromProduct = (p: CalculatorProduct) => ({
     sellingPrice: String(p.price),
@@ -33,6 +35,24 @@ export function ProfitCalculator({ products, initialAsin }: { products: Calculat
   const [asin, setAsin] = useState(initial?.asin ?? "");
   const [f, setF] = useState<Record<string, string>>(initial ? fromProduct(initial) : {});
   const [claimsItc, setClaimsItc] = useState(true);
+  const [saveMsg, setSaveMsg] = useState<string | null>(null);
+  const [saving, startSave] = useTransition();
+
+  // Signed-in users get their saved costs for this product back.
+  useEffect(() => {
+    if (!canSave || !asin) return;
+    let live = true;
+    loadCosts(asin).then((saved) => {
+      if (!live || !saved) return;
+      const { claimsItc: itc, updatedAt, ...fields } = saved;
+      setF((cur) => ({ ...cur, ...Object.fromEntries(Object.entries(fields).filter(([, v]) => v !== "")) }));
+      setClaimsItc(itc);
+      setSaveMsg(updatedAt ? `Loaded your saved costs (${new Date(updatedAt).toLocaleDateString("en-IN")}).` : null);
+    });
+    return () => {
+      live = false;
+    };
+  }, [asin, canSave]);
 
   const n = (k: string) => {
     const v = Number(f[k]);
@@ -100,6 +120,7 @@ export function ProfitCalculator({ products, initialAsin }: { products: Calculat
                 onChange={(e) => {
                   const p = products.find((x) => x.asin === e.target.value);
                   setAsin(e.target.value);
+                  setSaveMsg(null);
                   if (p) setF(fromProduct(p));
                 }}
               >
@@ -137,6 +158,39 @@ export function ProfitCalculator({ products, initialAsin }: { products: Calculat
                 </span>
               </span>
             </label>
+            {canSave && (
+              <div className="flex flex-wrap items-center gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={saving}
+                  onClick={() =>
+                    startSave(async () => {
+                      const r = await saveCosts(asin, {
+                        sellingPrice: f.sellingPrice ?? "",
+                        productGstPct: f.productGstPct ?? "",
+                        purchaseCost: f.purchaseCost ?? "",
+                        purchaseGstPct: f.purchaseGstPct ?? "",
+                        shipping: f.shipping ?? "",
+                        packaging: f.packaging ?? "",
+                        other: f.other ?? "",
+                        referralFeePct: f.referralFeePct ?? "",
+                        closingFee: f.closingFee ?? "",
+                        claimsItc,
+                      });
+                      setSaveMsg(r.ok ? "Saved. These costs load next time you open this product." : (r.error ?? "Couldn't save."));
+                    })
+                  }
+                >
+                  {saving ? "Saving…" : "Save my costs for this product"}
+                </Button>
+                {saveMsg && (
+                  <span role="status" className="text-[13px] text-muted-foreground">
+                    {saveMsg}
+                  </span>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="space-y-4 lg:sticky lg:top-24 lg:self-start">

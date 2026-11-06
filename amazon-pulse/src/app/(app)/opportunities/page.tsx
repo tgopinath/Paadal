@@ -12,6 +12,7 @@ import { WatchButton } from "@/components/product/product-actions";
 import { ScoreBreakdown } from "@/components/detail/score-breakdown";
 import { ProfitCalculator, type CalculatorProduct } from "@/components/opportunity/calculator";
 import { getData } from "@/lib/data/repository";
+import { getCurrentUser } from "@/lib/auth/session";
 import { opportunity, productSummaries, type OpportunityClass } from "@/lib/analytics/engine";
 import { CATEGORIES, CATEGORY_ECONOMICS, categoryName, estimateClosingFee } from "@/lib/categories";
 import { formatINR } from "@/lib/format";
@@ -50,8 +51,9 @@ export default function OpportunitiesPage({ searchParams }: { searchParams: Prom
 
 async function Opportunities({ searchParams }: { searchParams: Promise<Params> }) {
   const params = await searchParams;
-  const { ds } = await getData();
+  const { ds, mode } = await getData();
   if (ds.products.length === 0) return <NoDataYet />;
+  const canSave = mode === "production" && !!(await getCurrentUser());
   const all = productSummaries(ds).map((s) => opportunity(ds, s));
   const scored = all.filter((o) => o.score != null).sort((a, b) => b.score! - a.score!);
   const cls = (["high", "medium", "low"] as const).find((c) => c === params.class);
@@ -153,7 +155,7 @@ async function Opportunities({ searchParams }: { searchParams: Promise<Params> }
         <p className="text-[13px] text-muted-foreground">{all.length - scored.length} products are excluded because they have fewer than 10 days of snapshots in the last 30 days.</p>
       )}
 
-      <ProfitCalculator key={params.asin ?? "default"} products={calcProducts} initialAsin={params.asin} />
+      <ProfitCalculator key={params.asin ?? "default"} products={calcProducts} initialAsin={params.asin} canSave={canSave} />
     </div>
   );
 }

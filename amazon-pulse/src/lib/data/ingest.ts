@@ -115,11 +115,19 @@ export async function ingest(sql: Sql, source: Exclude<DataSourceKind, "demo">, 
           FROM json_to_recordset(${JSON.stringify(chunk)}::text::json) AS x(
             product_id text, captured_date text, price text, list_price text, rating text, review_count text,
             best_sellers_rank text, estimated_demand text, estimated_units text, verified_units text)
+          -- A later observation fills in or replaces fields; a field it didn't
+          -- observe (null) keeps the earlier value. Sources report in parts
+          -- (e.g. prices today, yesterday's sales report tomorrow).
           ON CONFLICT (product_id, captured_date, data_source, captured_at) DO UPDATE SET
-            price = EXCLUDED.price, list_price = EXCLUDED.list_price, rating = EXCLUDED.rating,
-            review_count = EXCLUDED.review_count, best_sellers_rank = EXCLUDED.best_sellers_rank,
-            estimated_demand = EXCLUDED.estimated_demand, estimated_units = EXCLUDED.estimated_units,
-            verified_units = EXCLUDED.verified_units, ingestion_run_id = EXCLUDED.ingestion_run_id`;
+            price = COALESCE(EXCLUDED.price, product_snapshots.price),
+            list_price = COALESCE(EXCLUDED.list_price, product_snapshots.list_price),
+            rating = COALESCE(EXCLUDED.rating, product_snapshots.rating),
+            review_count = COALESCE(EXCLUDED.review_count, product_snapshots.review_count),
+            best_sellers_rank = COALESCE(EXCLUDED.best_sellers_rank, product_snapshots.best_sellers_rank),
+            estimated_demand = COALESCE(EXCLUDED.estimated_demand, product_snapshots.estimated_demand),
+            estimated_units = COALESCE(EXCLUDED.estimated_units, product_snapshots.estimated_units),
+            verified_units = COALESCE(EXCLUDED.verified_units, product_snapshots.verified_units),
+            ingestion_run_id = EXCLUDED.ingestion_run_id`;
         written += res.count;
       }
       return { productsCreated: created, productsUpdated: ids.size - created, rowsWritten: written };

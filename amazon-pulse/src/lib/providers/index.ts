@@ -7,11 +7,15 @@
  * Policy: no scraping of Amazon shopping pages, and no bypassing of CAPTCHA,
  * authentication, rate limits or anti-bot measures.
  */
-import type { DataSourceKind, ISODate, Product, Snapshot } from "../types";
+import type { DataSourceKind, ISODate } from "../types";
+import type { IngestRow } from "../data/ingest";
+import { collectSpApi, spApiConfigFromEnv } from "./sp-api";
 
+/** Normalised observations, written by the shared importer. */
 export interface ProviderBatch {
-  products: Omit<Product, "id">[];
-  snapshots: (Snapshot & { asin: string })[];
+  rows: IngestRow[];
+  /** Human-readable notes for the run log (partial data, skipped steps). */
+  notes: string[];
 }
 
 export interface ProductDataProvider {
@@ -21,7 +25,7 @@ export interface ProductDataProvider {
   provides: string[];
   /** What it cannot provide, shown to users so expectations are right. */
   limitations: string[];
-  envVars: { name: string; description: string; secret: boolean }[];
+  envVars: { name: string; description: string; secret: boolean; optional?: boolean }[];
   docsUrl: string;
   /** False until the adapter's API calls are written and tested with real credentials. */
   implemented: boolean;
@@ -71,13 +75,13 @@ export const PROVIDERS: ProductDataProvider[] = [
       { name: "SPAPI_LWA_CLIENT_ID", description: "Login with Amazon client ID", secret: false },
       { name: "SPAPI_LWA_CLIENT_SECRET", description: "Login with Amazon client secret", secret: true },
       { name: "SPAPI_REFRESH_TOKEN", description: "Seller authorisation refresh token", secret: true },
-      { name: "SPAPI_MARKETPLACE_ID", description: "A21TJRUUN4KGV (Amazon.in)", secret: false },
-      { name: "SPAPI_ENDPOINT", description: "https://sellingpartnerapi-eu.amazon.com", secret: false },
+      { name: "SPAPI_MARKETPLACE_ID", description: "Optional. Defaults to A21TJRUUN4KGV (Amazon.in)", secret: false, optional: true },
+      { name: "SPAPI_ENDPOINT", description: "Optional. Defaults to https://sellingpartnerapi-eu.amazon.com", secret: false, optional: true },
     ],
     docsUrl: "https://developer-docs.amazon.com/sp-api/",
-    implemented: false,
-    async collect() {
-      throw new NotConnectedError("SP-API");
+    implemented: true,
+    async collect(asins, date) {
+      return collectSpApi(spApiConfigFromEnv(), asins, date);
     },
   },
   {
@@ -111,7 +115,7 @@ export const PROVIDERS: ProductDataProvider[] = [
 
 /** Server-only: whether every required variable is set. Never returns values. */
 export function providerStatus(p: ProductDataProvider): { configured: boolean; missing: string[] } {
-  const missing = p.envVars.filter((v) => !process.env[v.name]).map((v) => v.name);
+  const missing = p.envVars.filter((v) => !v.optional && !process.env[v.name]).map((v) => v.name);
   return { configured: p.envVars.length > 0 && missing.length === 0, missing };
 }
 

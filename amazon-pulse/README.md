@@ -33,9 +33,12 @@ profit estimates.
 | Installable PWA: manifest, icons, service worker, offline page | ✅ |
 | Production mode on PostgreSQL (partitioned snapshots, daily rollups) | ✅ |
 | Email/password accounts (scrypt, database sessions, sign-in throttling) | ✅ |
+| Account settings: name, password change (signs out other devices), account deletion | ✅ |
+| Profit calculator saves your costs per product; report history with re-download | ✅ (production, signed in) |
 | Scheduled job: partitions, rollups, alert evaluation, cleanup | ✅ |
 | Amazon Pulse AI (Claude, answers only from analytics tools) | ✅ needs `ANTHROPIC_API_KEY` |
-| PA-API / SP-API / licensed-provider collection adapters | Waiting for credentials (see below) |
+| Selling Partner API daily collection (verified sales, price, rank, catalog) | ✅ needs Seller Central app credentials (see `docs/HANDOFF.md`, step 4A) |
+| PA-API / licensed-provider collection adapters | Not built |
 | Alert delivery by email or push | Not started (needs an email provider) |
 
 ## Run locally
@@ -96,8 +99,9 @@ APP_MODE=production DATABASE_URL=postgres://localhost/amazon_pulse npm run dev
 | `PAAPI_PARTNER_TAG` | with PA-API | Associates tracking ID, e.g. `yourtag-21` |
 | `PAAPI_HOST` | with PA-API | `webservices.amazon.in` |
 | `SPAPI_LWA_CLIENT_ID`, `SPAPI_LWA_CLIENT_SECRET`, `SPAPI_REFRESH_TOKEN` | optional | Selling Partner API (your own account) |
-| `SPAPI_MARKETPLACE_ID` | with SP-API | `A21TJRUUN4KGV` (Amazon.in) |
-| `SPAPI_ENDPOINT` | with SP-API | `https://sellingpartnerapi-eu.amazon.com` |
+| `SPAPI_MARKETPLACE_ID` | no | Defaults to `A21TJRUUN4KGV` (Amazon.in) |
+| `SPAPI_ENDPOINT` | no | Defaults to `https://sellingpartnerapi-eu.amazon.com` |
+| `SPAPI_MAX_ASINS` | no (default 40) | ASINs priced per daily run (pricing allows 0.5 requests/second) |
 | `RESEARCH_API_PROVIDER`, `RESEARCH_API_KEY` | optional | Licensed research provider |
 
 Credentials are read only on the server. The Data Sources page shows whether
