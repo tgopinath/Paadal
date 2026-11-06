@@ -24,7 +24,9 @@ Attach the repository (or upload the zip), then paste:
 | Email/password accounts (scrypt, database sessions, sign-in throttling) | Done; required in production |
 | CSV history import with preview and a run log | Done |
 | Watchlist, collections and alerts saved to the account | Done (production, signed in) |
-| CSV and Excel exports, print to PDF | Done |
+| CSV and Excel exports, print to PDF, report history | Done |
+| Account settings (name, password change, delete account) | Done |
+| Profit calculator saves costs per product | Done (production, signed in) |
 | Daily scheduled job `/api/ingest` (partitions, rollups, alerts, cleanup) | Done; scheduled in `vercel.json` |
 | Amazon Pulse AI (Claude Opus 5.5, answers only from analytics tools) | Done; needs `ANTHROPIC_API_KEY`; not yet tried with a real key |
 | SP-API daily collection (your seller account) | Built; **waiting for credentials** (step 4A) |

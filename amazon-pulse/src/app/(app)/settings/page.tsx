@@ -1,4 +1,9 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
+import { connection } from "next/server";
+import { authAvailable, getCurrentUser } from "@/lib/auth/session";
+import { DeleteAccountForm, PasswordForm, ProfileForm } from "@/components/settings/account-forms";
+import { Skeleton } from "@/components/ui/skeleton";
 import { PageHeader } from "@/components/common/page-header";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
@@ -9,16 +14,11 @@ export const metadata: Metadata = { title: "Settings" };
 export default function SettingsPage() {
   return (
     <>
-      <PageHeader title="Settings" description="Account, fee and tax assumptions, and display preferences." />
+      <PageHeader title="Settings" description="Your account, and the fee and tax assumptions used for screening." />
       <div className="space-y-6">
-        <Card>
-          <CardHeader>
-            <div>
-              <CardTitle>Account</CardTitle>
-              <CardDescription>Email and password sign-in ships with the database in Phase 6. Until then, watchlists and alerts are saved on this device only.</CardDescription>
-            </div>
-          </CardHeader>
-        </Card>
+        <Suspense fallback={<Skeleton className="h-40 w-full rounded-lg" />}>
+          <AccountSection />
+        </Suspense>
         <Card>
           <CardHeader>
             <div>
@@ -57,6 +57,64 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
       </div>
+    </>
+  );
+}
+
+async function AccountSection() {
+  await connection();
+  const user = authAvailable() ? await getCurrentUser() : null;
+  if (!user) {
+    return (
+      <Card>
+        <CardHeader>
+          <div>
+            <CardTitle>Account</CardTitle>
+            <CardDescription>
+              {authAvailable()
+                ? "Sign in to manage your account."
+                : "Accounts need a database (DATABASE_URL). In demo mode, watchlists and alerts are saved on this device."}
+            </CardDescription>
+          </div>
+        </CardHeader>
+      </Card>
+    );
+  }
+  return (
+    <>
+      <Card>
+        <CardHeader>
+          <div>
+            <CardTitle>Profile</CardTitle>
+            <CardDescription>Your name appears in the top bar.</CardDescription>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <ProfileForm name={user.name} email={user.email} />
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
+          <div>
+            <CardTitle>Password</CardTitle>
+            <CardDescription>Changing it signs you out everywhere else.</CardDescription>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <PasswordForm />
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
+          <div>
+            <CardTitle>Delete account</CardTitle>
+            <CardDescription>Permanently removes your account and personal data.</CardDescription>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <DeleteAccountForm />
+        </CardContent>
+      </Card>
     </>
   );
 }

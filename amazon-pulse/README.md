@@ -33,6 +33,8 @@ profit estimates.
 | Installable PWA: manifest, icons, service worker, offline page | ✅ |
 | Production mode on PostgreSQL (partitioned snapshots, daily rollups) | ✅ |
 | Email/password accounts (scrypt, database sessions, sign-in throttling) | ✅ |
+| Account settings: name, password change (signs out other devices), account deletion | ✅ |
+| Profit calculator saves your costs per product; report history with re-download | ✅ (production, signed in) |
 | Scheduled job: partitions, rollups, alert evaluation, cleanup | ✅ |
 | Amazon Pulse AI (Claude, answers only from analytics tools) | ✅ needs `ANTHROPIC_API_KEY` |
 | Selling Partner API daily collection (verified sales, price, rank, catalog) | ✅ needs Seller Central app credentials (see `docs/HANDOFF.md`, step 4A) |
