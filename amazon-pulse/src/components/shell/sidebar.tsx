@@ -21,7 +21,7 @@ function SidebarActive() {
 
 function SidebarView({ pathname }: { pathname: string }) {
   return (
-    <aside className="sticky top-0 hidden h-dvh w-64 shrink-0 flex-col border-r bg-surface/50 lg:flex">
+    <aside className="pulse-sidebar sticky top-0 hidden h-dvh w-64 shrink-0 flex-col border-r bg-surface/50 lg:flex">
       <Link href="/" className="px-5 pb-4 pt-5" aria-label="Amazon Pulse home">
         <Logo />
       </Link>

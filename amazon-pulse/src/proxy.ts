@@ -20,5 +20,5 @@ export function proxy(request: NextRequest) {
 
 export const config = {
   // Everything except auth pages, Next internals, PWA files and static assets.
-  matcher: ["/((?!login|signup|_next/|icons/|sw\\.js|offline\\.html|manifest\\.webmanifest|icon\\.svg|apple-icon\\.png|api/ingest).*)"],
+  matcher: ["/((?!login|signup|_next/|icons/|sw\\.js|offline\\.html|native\\.css|manifest\\.webmanifest|icon\\.svg|apple-icon\\.png|api/ingest).*)"],
 };

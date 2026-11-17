@@ -4,6 +4,7 @@ import { ChevronRight } from "lucide-react";
 import { PageHeader } from "@/components/common/page-header";
 import { Card } from "@/components/ui/card";
 import { MOBILE_TABS, NAV_SECTIONS } from "@/components/shell/nav";
+import { UserMenu } from "@/components/shell/user-menu";
 
 export const metadata: Metadata = { title: "Profile" };
 
@@ -13,6 +14,13 @@ export default function ProfilePage() {
     <>
       <PageHeader title="Profile" description="All sections and settings." />
       <div className="space-y-6">
+        {/* Inside the Android and iOS apps the header (with the account menu) is hidden, so the account lives here. */}
+        <section className="pulse-app-only">
+          <h2 className="mb-2 px-1 text-[11px] font-medium uppercase tracking-wider text-subtle-foreground">Account</h2>
+          <Card className="flex min-h-14 items-center px-4 py-2">
+            <UserMenu />
+          </Card>
+        </section>
         {NAV_SECTIONS.map((s) => {
           const items = s.items.filter((i) => !MOBILE_TABS.some((t) => t.href === i.href));
           if (!items.length) return null;

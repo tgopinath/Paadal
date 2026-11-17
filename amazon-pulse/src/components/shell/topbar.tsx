@@ -10,7 +10,7 @@ import { UserMenu } from "./user-menu";
  */
 export function Topbar() {
   return (
-    <header className="sticky top-0 z-30 border-b bg-white/90 backdrop-blur">
+    <header className="pulse-topbar sticky top-0 z-30 border-b bg-white/90 backdrop-blur">
       <div className="flex h-14 items-center gap-3 px-4 sm:px-6 lg:h-16 lg:px-8">
         <Link href="/" className="lg:hidden" aria-label="Amazon Pulse home">
           <Logo compact />

@@ -1,0 +1,62 @@
+/* Amazon Pulse native app looks. Scoped to html.k-android (Material Design 3, Kolam M3 kit) and html.k-ios
+   (Apple HIG, Kolam iOS kit). Only the Android and iOS apps (or ?app=android / ?app=ios) set those classes,
+   so the website never matches anything here and keeps its own look. */
+.pulse-app-only { display: none; }
+
+/* ---------- both apps: the website header, sidebar and bottom bar give way to the native bars ---------- */
+html:is(.k-android, .k-ios) :is(.pulse-topbar, .pulse-mobilenav, .pulse-sidebar, .pulse-page-title) { display: none !important; }
+html:is(.k-android, .k-ios) .pulse-app-only { display: block; }
+html:is(.k-android, .k-ios) .pulse-app-only .hidden { display: inline; }
+html:is(.k-android, .k-ios) #main { padding-top: 12px; }
+
+/* ---------- Android: Material Design 3 ---------- */
+html.k-android.k-app {
+  --background: var(--md-sys-color-surface);
+  --foreground: var(--md-sys-color-on-surface);
+  --card: var(--md-sys-color-surface-container-low);
+  --surface: var(--md-sys-color-surface-container);
+  --surface-2: var(--md-sys-color-surface-container-high);
+  --border: var(--md-sys-color-outline-variant);
+  --input: var(--md-sys-color-outline);
+  --muted-foreground: var(--md-sys-color-on-surface-variant);
+  --primary: var(--md-sys-color-primary);
+  --primary-hover: color-mix(in srgb, var(--md-sys-color-primary) 88%, var(--md-sys-color-on-primary));
+  --primary-soft: var(--md-sys-color-secondary-container);
+  --primary-foreground: var(--md-sys-color-on-primary);
+  --ring: var(--md-sys-color-primary);
+  --radius: 12px;
+}
+html.k-android #main { padding-bottom: calc(96px + var(--md-inset-bottom, 0px)); }
+html.k-android [data-slot="card"] { border-color: transparent; border-radius: var(--md-sys-shape-corner-medium); background: var(--md-sys-color-surface-container-low); }
+html.k-android [data-slot="button"] { border-radius: var(--md-sys-shape-corner-full); min-height: 40px; padding-inline: 20px; font-weight: 700; }
+html.k-android [data-slot="button"]:is(.size-9, .size-8) { padding-inline: 0; min-height: 0; width: 40px; height: 40px; }
+html.k-android [data-slot="button"].bg-white { background: transparent; border-color: var(--md-sys-color-outline); color: var(--md-sys-color-primary); }
+html.k-android [data-slot="button"].bg-surface { background: var(--md-sys-color-secondary-container); color: var(--md-sys-color-on-secondary-container); }
+html.k-android :is(input:not([type=checkbox]):not([type=radio]), select):not(.md-text-field *) { min-height: 48px; border-radius: var(--md-sys-shape-corner-extra-small); background: transparent; border-color: var(--md-sys-color-outline); }
+html.k-android input[type="search"] { border-radius: var(--md-sys-shape-corner-full); border-color: transparent; background: var(--md-sys-color-surface-container-high); min-height: 56px; padding-left: 44px; }
+html.k-android [role="note"] { border: 0; margin: 8px 16px 0; border-radius: var(--md-sys-shape-corner-medium); background: var(--md-sys-color-secondary-container); color: var(--md-sys-color-on-secondary-container); }
+html.k-android [role="tablist"] { border-radius: var(--md-sys-shape-corner-full); }
+
+/* ---------- iOS: Apple HIG ---------- */
+html.k-ios {
+  --background: #F2F2F7;
+  --card: #FFFFFF;
+  --surface: #FFFFFF;
+  --surface-2: rgba(118, 118, 128, .12);
+  --border: rgba(60, 60, 67, .18);
+  --primary: #1D4ED8;
+  --primary-hover: #1E40AF;
+  --primary-soft: rgba(29, 78, 216, .1);
+  --ring: #1D4ED8;
+}
+html.k-ios body { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif; background: var(--background); }
+html.k-ios #main { padding-bottom: calc(110px + env(safe-area-inset-bottom, 0px)); }
+html.k-ios [data-slot="card"] { border: 0; border-radius: 16px; background: #fff; }
+html.k-ios [data-slot="button"] { border-radius: 999px; min-height: 36px; font-weight: 600; font-size: 15px; }
+html.k-ios [data-slot="button"].bg-white { border: 0; background: rgba(118, 118, 128, .12); color: var(--primary); }
+html.k-ios [data-slot="button"]:active { opacity: .6; }
+html.k-ios input[type="search"] { height: 36px; border: 0; border-radius: 10px; background: rgba(118, 118, 128, .12); font-size: 17px; }
+html.k-ios [role="note"] { border: 0; margin: 4px 16px 0; border-radius: 14px; }
+html.k-ios h1, html.k-ios h2 { letter-spacing: -.01em; }
+/* the kit tints every link; give links back the app's own colours (Tailwind layers) */
+html.k-ios a { color: revert-layer; }

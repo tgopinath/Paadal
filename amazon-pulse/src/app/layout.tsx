@@ -23,7 +23,20 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en-IN" className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+    // data-theme="light": the product is light-only by design, so the native app looks stay light too.
+    <html lang="en-IN" data-theme="light" data-m3-primary="#2563eb" className={`${geistSans.variable} ${geistMono.variable} antialiased`} suppressHydrationWarning>
+      <head>
+        {/* Native app looks: Material Design 3 inside the Android app, Apple HIG inside the iOS app.
+            Both scripts only tag <html> (k-android / k-ios) inside the apps or with ?app=android|ios; the website is unchanged. */}
+        {/* eslint-disable-next-line @next/next/no-sync-scripts -- must tag <html> before first paint */}
+        <script src="https://tgopinath.github.io/kolam-design-system/m3/kolam-m3.js" />
+        {/* eslint-disable-next-line @next/next/no-sync-scripts -- must tag <html> before first paint */}
+        <script src="https://tgopinath.github.io/kolam-design-system/ios/kolam-ios.js" />
+        <link rel="stylesheet" href="https://tgopinath.github.io/kolam-design-system/m3/kolam-m3.css" />
+        <link rel="stylesheet" href="https://tgopinath.github.io/kolam-design-system/ios/kolam-ios.css" />
+        {/* eslint-disable-next-line @next/next/no-css-tags -- plain file so it loads after the kits */}
+        <link rel="stylesheet" href="/native.css" />
+      </head>
       <body className="min-h-dvh">
         {children}
         <ServiceWorkerRegister />

@@ -4,6 +4,7 @@ import { Sidebar } from "@/components/shell/sidebar";
 import { MobileNav } from "@/components/shell/mobile-nav";
 import { Topbar } from "@/components/shell/topbar";
 import { DemoBanner } from "@/components/shell/demo-banner";
+import { NativeShell } from "@/components/shell/native-shell";
 import { authRequired, getCurrentUser } from "@/lib/auth/session";
 
 /** Server-side session check. The proxy's cookie check is only optimistic. */
@@ -34,6 +35,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </div>
       </div>
       <MobileNav />
+      <NativeShell />
     </>
   );
 }
