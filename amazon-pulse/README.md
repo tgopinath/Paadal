@@ -13,6 +13,7 @@ profit estimates.
 > turns demo data off.
 
 - Architecture, screen map, data model and scoring methods: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
+- System architecture, backend and deploy, with diagrams: [`ARCHITECTURE.md`](ARCHITECTURE.md)
 - Database schema: [`db/migrations/`](db/migrations) (plain SQL, `npm run db:migrate`)
 
 ## What works today
