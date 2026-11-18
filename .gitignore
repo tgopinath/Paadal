@@ -39,3 +39,7 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# local builds
+/paadal.apk
+/ios-sim/

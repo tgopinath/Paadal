@@ -30,8 +30,11 @@ npm start          # then press i (iOS simulator), a (Android emulator) or w (we
 - Phone: install **Expo Go** and scan the QR code. Background audio needs a
   development build: `npx expo run:ios` / `npx expo run:android`, or `npx eas-cli build --profile development`.
 - Web: `npm run web` for development, `npm run build:web` for a static site in `dist/`.
-- Live web app: https://tgopinath.github.io/Paadal/, rebuilt automatically on every push to `main`
-  (`.github/workflows/deploy-web.yml`).
+- Live web app: https://paadal-two.vercel.app (Vercel, deploys on every push to `main` that touches Paadal; `vercel.json`).
+  The GitHub Pages copy at https://tgopinath.github.io/Paadal/ is still rebuilt by `.github/workflows/deploy-web.yml`.
+- Native looks: Material Design 3 inside the Android app, Apple HIG inside the iPhone app, Paadal's own look on the web
+  (`HIG` / `M3` flags in `src/theme.ts`; preview on the web with `?app=android` or `?app=ios`).
+- Android APK without EAS: `zsh scripts/build-apk.sh` (uploads `paadal.apk` to release v1.0.0). iPhone Simulator: `zsh scripts/build-ios-sim.sh`.
 
 Checks:
 

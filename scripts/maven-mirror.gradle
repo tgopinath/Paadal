@@ -1,0 +1,11 @@
+// Maven Central (repo.maven.apache.org) returns 404 on this network; Google's mirror of it works.
+// Same as ~/Documents/android-wrappers/maven-mirror.gradle, plus the Gradle Plugin Portal and Google for
+// plugins (React Native libraries such as react-native-worklets apply plugins from the portal).
+def mirror = 'https://maven-central.storage-download.googleapis.com/maven2'
+beforeSettings { settings ->
+  settings.pluginManagement.repositories { gradlePluginPortal(); google(); maven { url = mirror } }
+}
+allprojects {
+  buildscript { repositories { maven { url = mirror } } }
+  repositories { maven { url = mirror } }
+}
