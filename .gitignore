@@ -43,3 +43,4 @@ yarn-error.*
 # local builds
 /paadal.apk
 /ios-sim/
+.vercel
