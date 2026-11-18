@@ -8,7 +8,7 @@ import { IconButton } from '@/components/IconButton';
 import { getAlbum, getArtist, getPlaylist, type Gradient } from '@/data/catalog';
 import { songCount } from '@/lib/format';
 import { useLibrary } from '@/store/library';
-import { colors, MINI_PLAYER_HEIGHT, radius, spacing } from '@/theme';
+import { colors, MINI_PLAYER_HEIGHT, radius, spacing, screenTitle } from '@/theme';
 
 type Filter = 'all' | 'playlists' | 'albums' | 'artists';
 type Item = {
@@ -110,12 +110,12 @@ export default function LibraryScreen() {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.bg },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: spacing.lg },
-  heading: { color: colors.text, fontSize: 28, fontWeight: '800', letterSpacing: -0.6 },
+  heading: { color: colors.text, ...screenTitle },
   chips: { flexDirection: 'row', gap: spacing.sm, paddingHorizontal: spacing.lg, paddingVertical: spacing.md, flexWrap: 'wrap' },
   chip: { paddingHorizontal: spacing.md, paddingVertical: 7, borderRadius: radius.pill, backgroundColor: colors.surfaceRaised },
   chipActive: { backgroundColor: colors.accent },
   chipText: { color: colors.text, fontSize: 13, fontWeight: '600' },
-  chipTextActive: { color: '#111' },
+  chipTextActive: { color: colors.onAccent },
   row: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingHorizontal: spacing.lg, paddingVertical: spacing.sm },
   title: { color: colors.text, fontSize: 16, fontWeight: '600' },
   subtitle: { color: colors.textMuted, fontSize: 13, marginTop: 2 },

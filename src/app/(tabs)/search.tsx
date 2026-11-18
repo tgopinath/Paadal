@@ -10,7 +10,7 @@ import { SectionTitle } from '@/components/Shelf';
 import { TrackRow } from '@/components/TrackRow';
 import { getArtist, playlists, search } from '@/data/catalog';
 import { usePlayer } from '@/store/player';
-import { colors, MINI_PLAYER_HEIGHT, radius, spacing } from '@/theme';
+import { colors, MINI_PLAYER_HEIGHT, radius, spacing, screenTitle } from '@/theme';
 
 export default function SearchScreen() {
   const insets = useSafeAreaInsets();
@@ -122,7 +122,7 @@ function ResultShelf({ title, children }: { title: string; children: React.React
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.bg },
-  heading: { color: colors.text, fontSize: 28, fontWeight: '800', letterSpacing: -0.6, paddingHorizontal: spacing.lg },
+  heading: { color: colors.text, ...screenTitle, paddingHorizontal: spacing.lg },
   inputWrap: {
     flexDirection: 'row',
     alignItems: 'center',

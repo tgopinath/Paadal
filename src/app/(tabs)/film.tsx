@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { SPOTIFY_GREEN, SpotifyPanel } from '@/components/SpotifyPanel';
 import { YOUTUBE_RED, YouTubePanel } from '@/components/YouTubePanel';
-import { colors, MINI_PLAYER_HEIGHT, radius, spacing } from '@/theme';
+import { colors, MINI_PLAYER_HEIGHT, radius, spacing, screenTitle } from '@/theme';
 
 type Source = 'spotify' | 'youtube';
 
@@ -52,7 +52,7 @@ export default function FilmSongsScreen() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.bg },
-  heading: { color: colors.text, fontSize: 28, fontWeight: '800', letterSpacing: -0.6, paddingHorizontal: spacing.lg },
+  heading: { color: colors.text, ...screenTitle, paddingHorizontal: spacing.lg },
   sub: { color: colors.textMuted, fontSize: 14, paddingHorizontal: spacing.lg, marginTop: spacing.xs },
   segment: {
     flexDirection: 'row',

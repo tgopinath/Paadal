@@ -1,0 +1,9 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "installCommand": "npm ci",
+  "buildCommand": "npx expo export --platform web",
+  "outputDirectory": "dist",
+  "ignoreCommand": "git diff --quiet HEAD^ HEAD -- . ':(exclude)amazon-pulse'",
+  "rewrites": [{ "source": "/((?!_expo/|assets/|favicon).*)", "destination": "/index.html" }]
+}

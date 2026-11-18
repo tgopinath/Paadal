@@ -1,20 +1,22 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Pressable } from 'react-native';
 
-import { colors } from '@/theme';
+import { haptic } from '@/lib/haptics';
+import { colors, M3 } from '@/theme';
 
 type Props = { playing: boolean; onPress: () => void; size?: number; color?: string; iconColor?: string };
 
-export function PlayButton({ playing, onPress, size = 56, color = colors.accent, iconColor = '#111' }: Props) {
+export function PlayButton({ playing, onPress, size = 56, color = colors.accent, iconColor = colors.onAccent }: Props) {
   return (
     <Pressable
-      onPress={onPress}
+      onPress={() => { haptic(); onPress(); }}
       accessibilityRole="button"
       accessibilityLabel={playing ? 'Pause' : 'Play'}
       style={({ pressed }) => ({
         width: size,
         height: size,
-        borderRadius: size / 2,
+        // M3: a FAB-style rounded square; elsewhere a circle.
+        borderRadius: M3 ? size * 0.3 : size / 2,
         backgroundColor: color,
         alignItems: 'center',
         justifyContent: 'center',

@@ -72,7 +72,7 @@ const styles = StyleSheet.create({
   buttons: { flexDirection: 'row', justifyContent: 'center', gap: spacing.lg },
   button: { borderRadius: radius.pill, paddingHorizontal: spacing.xl, paddingVertical: spacing.md, minWidth: 120, alignItems: 'center' },
   primary: { backgroundColor: colors.accent },
-  primaryText: { color: '#111', fontWeight: '800', fontSize: 15 },
+  primaryText: { color: colors.onAccent, fontWeight: '800', fontSize: 15 },
   secondary: { borderWidth: 1, borderColor: colors.textFaint },
   secondaryText: { color: colors.text, fontWeight: '700', fontSize: 15 },
 });

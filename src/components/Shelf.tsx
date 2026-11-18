@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import { colors, spacing } from '@/theme';
+import { colors, spacing, sectionTitle } from '@/theme';
 
 export function SectionTitle({ children }: { children: ReactNode }) {
   return <Text style={styles.title} accessibilityRole="header">{children}</Text>;
@@ -21,6 +21,6 @@ export function Shelf({ title, children }: { title: string; children: ReactNode 
 
 const styles = StyleSheet.create({
   shelf: { marginTop: spacing.xl },
-  title: { color: colors.text, fontSize: 21, fontWeight: '800', letterSpacing: -0.4, paddingHorizontal: spacing.lg, marginBottom: spacing.md },
+  title: { color: colors.text, ...sectionTitle, paddingHorizontal: spacing.lg, marginBottom: spacing.md },
   row: { paddingHorizontal: spacing.lg, gap: spacing.lg },
 });
